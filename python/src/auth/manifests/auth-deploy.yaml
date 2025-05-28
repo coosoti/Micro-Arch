@@ -1,0 +1,36 @@
+apiVersion: apps/v1                # Specifies the API version of the Kubernetes Deployment object
+kind: Deployment                   # Defines the object type as a Deployment
+
+metadata:
+  name: auth                       # The name of the Deployment is "auth"
+  labels:
+    app: auth                      # Labels used for identifying and selecting this app
+
+spec:
+  replicas: 2                      # Specifies that 2 replica Pods should be created
+  selector:
+    matchLabels:
+      app: auth                    # Matches Pods with this label for managing them under this Deployment
+
+  strategy:
+    type: RollingUpdate            # Strategy for updating Pods is RollingUpdate (default)
+    rollingUpdate:
+      maxSurge: 3                  # During an update, up to 3 extra Pods can be scheduled (beyond desired replicas)
+
+  template:
+    metadata:
+      labels:
+        app: auth                  # Labels applied to the Pods created by this Deployment
+
+    spec:
+      containers:
+        - name: auth               # Name of the container in the Pod
+          image: cosoti/auth       # The Docker image to use (must be pushed to Docker Hub or a registry)
+          ports:
+            - containerPort: 5000  # Exposes port 5000 on the container (used by the app)
+
+          envFrom:
+            - configMapRef:
+                name: auth-configmap   # Loads environment variables from a ConfigMap named "auth-configmap"
+            - secretRef:
+                name: auth-secret      # Loads sensitive environment variables from a Secret named "auth-secret"
