@@ -1,0 +1,35 @@
+apiVersion: apps/v1         # Specifies the API version for the Deployment resource
+kind: Deployment            # Declares the resource type — a Deployment manages Pods
+
+metadata:
+  name: gateway             # The name of the Deployment
+  labels:                   # Metadata labels to identify and group this Deployment
+    app: gateway
+
+spec:
+  replicas: 2               # Number of Pod replicas to run (2 gateway instances)
+
+  selector:                 # Defines how to match Pods managed by this Deployment
+    matchLabels:
+      app: gateway          # Must match the labels in the Pod template
+
+  strategy:
+    type: RollingUpdate     # Update strategy: replace old Pods with new ones gradually
+    rollingUpdate:
+      maxSurge: 3           # During the update, allow up to 3 extra Pods (beyond replicas)
+
+  template:                 # Pod template that defines what each replica should look like
+    metadata:
+      labels:
+        app: gateway        # Labels applied to Pods; must match the selector above
+
+    spec:
+      containers:
+        - name: gateway     # Name of the container
+          image: sweasytech/gateway  # Docker image to use for this container
+          
+          envFrom:          # Import environment variables from external sources:
+            - configMapRef:       # Reference to a ConfigMap for non-sensitive config values
+                name: gateway-configmap
+            - secretRef:          # Reference to a Secret for sensitive values (like API keys)
+                name: gateway-secret

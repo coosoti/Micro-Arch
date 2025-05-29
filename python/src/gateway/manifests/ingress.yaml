@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1  # API version for Ingress in newer Kubernetes versions (1.19+)
+kind: Ingress                     # This resource type handles external access to services
+
+metadata:
+  name: gateway-ingress          # Name of the Ingress resource
+  annotations:                   # Custom NGINX settings for reverse proxy behavior
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"         # Allows uploads of any size (0 means unlimited)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"    # Increases the timeout for reading a response from the proxied server (600s)
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"    # Timeout for sending data to the upstream server
+    # nginx.ingress.kubernetes.io/proxy-max-temp-file-size: "1024m"
+    # (Optional) max size of temp files created for requests — commented out
+
+spec:
+  rules:                          # Define traffic routing rules
+    - host: mp3converter.com      # Domain name that this Ingress will handle
+      http:
+        paths:
+          - path: /               # Path to match on the domain
+            pathType: Prefix      # Match all paths that start with "/"
+            backend:              # Route traffic to the specified backend service
+              service:
+                name: gateway     # Internal Kubernetes Service name to route to
+                port:
+                  number: 8080    # Port on which the gateway service is listening
